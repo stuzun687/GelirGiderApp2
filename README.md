@@ -9,6 +9,45 @@
 
 GelirGiderApp, kişisel finans yönetimini kolaylaştırmak için tasarlanmış modern bir iOS uygulamasıdır. Kullanıcıların gelir ve giderlerini etkili bir şekilde takip etmelerini, bütçelerini yönetmelerini ve finansal hedeflerine ulaşmalarını sağlar.
 
+## ✅ Proje Gereksinimleri ve Uygulama
+
+### 📱 Çoklu Ekran Desteği
+Uygulamamız 5'ten fazla ekran içermektedir:
+1. **Dashboard (Ana Sayfa)**: Finansal durumun genel görünümü
+2. **Transactions (İşlemler)**: Tüm gelir ve giderlerin listelendiği ekran
+3. **Add Transaction (İşlem Ekleme)**: Yeni işlem ekleme formu
+4. **Analytics (Analiz)**: Detaylı grafik ve istatistikler
+5. **Settings (Ayarlar)**: Uygulama ayarları ve veri yönetimi
+6. **Category Picker**: Kategori seçim ekranı
+
+### 🔄 Ekran Yönlendirmesi
+Uygulamamız, SwiftUI'nin otomatik düzen sistemi sayesinde ekran döndürmelerinden etkilenmez:
+- Tüm görünümler adaptif tasarıma sahiptir
+- `.navigationViewStyle(.stack)` kullanılarak tutarlı navigasyon sağlanır
+- Dinamik boyutlandırma ve otomatik düzen ayarlamaları mevcuttur
+
+### 📋 Liste Görünümleri (RecyclerView Eşdeğeri)
+iOS'ta RecyclerView'in eşdeğeri olarak aşağıdaki yapıları kullanıyoruz:
+- **LazyVStack**: Verimli bellek kullanımı için görünür öğeleri dinamik olarak yükler
+- **List**: Kaydırılabilir, yeniden kullanılabilir hücreler sunar
+- **ScrollView + ForEach**: Özelleştirilmiş kaydırılabilir listeler oluşturur
+
+Örnekler:
+- İşlemler listesi (`TransactionsView`)
+- Kategori seçim listesi (`CategoryPickerView`)
+- Dashboard'daki son işlemler listesi
+
+### 📤 Harici Uygulama Entegrasyonu ve Veri Paylaşımı
+Uygulamamız, çeşitli harici uygulamalarla veri paylaşımı yapabilmektedir:
+- **CSV Dışa Aktarma**: Tüm işlem verilerini CSV formatında dışa aktarma ve paylaşma
+  - Mail uygulaması ile gönderme
+  - Mesajlar ile paylaşma
+  - Notlar uygulamasına kaydetme
+  - Dosyalar uygulamasına kaydetme
+- **Sistem Ayarları Entegrasyonu**: Bildirim izinleri için Ayarlar uygulamasına yönlendirme
+- **App Store Bağlantısı**: Uygulama değerlendirmesi için App Store'a yönlendirme
+- **Safari Entegrasyonu**: Gizlilik politikası ve kullanım koşulları için web tarayıcı açma
+
 ## 🌟 Özellikler
 
 ### 📊 Kapsamlı Dashboard
