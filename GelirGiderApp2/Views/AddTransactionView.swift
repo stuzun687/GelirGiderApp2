@@ -20,9 +20,47 @@ struct AddTransactionView: View {
     @State private var recurringType: RecurringType = .monthly
     @State private var recurringDuration: Int = 1
     @State private var showDatePicker = false
+    @State private var showTimePicker = false
+    @State private var showNotificationAlert = false
+    @State private var notificationError: Error?
+    @State private var showSuccessMessage = false
+    @State private var isNotificationAuthorized = false
+    @State private var enableNotification = true
     
     private var isFormValid: Bool {
         !title.isEmpty && !amount.isEmpty && !selectedCategory.isEmpty
+    }
+    
+    private var notificationPreviewText: String {
+        guard enableNotification else { return "Notifications disabled for this transaction" }
+        
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        
+        var text = "You will be notified on \(formatter.string(from: date))"
+        
+        if isRecurring {
+            text += "\nRecurring: "
+            switch recurringType {
+            case .daily:
+                text += "Daily"
+            case .weekly:
+                text += "Every week"
+            case .monthly:
+                text += "Every month"
+            case .yearly:
+                text += "Every year"
+            case .none:
+                break
+            }
+            
+            if let endDate = calculateEndDate() {
+                text += " until \(formatter.string(from: endDate))"
+            }
+        }
+        
+        return text
     }
     
     var body: some View {
@@ -31,8 +69,8 @@ struct AddTransactionView: View {
                 // Background gradient
                 LinearGradient(
                     colors: [
-                        Color(colorScheme == .dark ? .systemGray6 : .systemBackground),
-                        Color(colorScheme == .dark ? .systemGray5 : .systemGray6)
+                        Color.black,
+                        Color.black.opacity(0.8)
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -43,8 +81,36 @@ struct AddTransactionView: View {
                     VStack(spacing: 24) {
                         amountCard
                         detailsCard
+                        notificationSection
                     }
                     .padding(.vertical)
+                }
+                
+                // Success Message
+                if showSuccessMessage {
+                    VStack {
+                        Spacer()
+                        HStack(spacing: 12) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                            Text("Transaction saved successfully!")
+                                .foregroundColor(.white)
+                        }
+                        .padding()
+                        .background(
+                            Capsule()
+                                .fill(Color(.systemGray6).opacity(0.95))
+                        )
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                    }
+                    .padding(.bottom, 32)
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            withAnimation {
+                                showSuccessMessage = false
+                            }
+                        }
+                    }
                 }
             }
             .navigationTitle("Add Transaction")
@@ -64,6 +130,15 @@ struct AddTransactionView: View {
             }
             .sheet(isPresented: $showingCategoryPicker) {
                 CategoryPickerView(selectedCategory: $selectedCategory)
+            }
+            .alert("Notification Error", isPresented: $showNotificationAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                if let error = notificationError {
+                    Text("Error setting up notification: \(error.localizedDescription)\nPlease check your notification permissions in Settings.")
+                } else {
+                    Text("There was an error setting up the notification. Please check your notification permissions in Settings.")
+                }
             }
         }
     }
@@ -190,14 +265,19 @@ struct AddTransactionView: View {
     
     private var dateButton: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label("Date", systemImage: "calendar")
+            Label("Date & Time", systemImage: "calendar")
                 .font(.subheadline)
                 .foregroundColor(.gray)
             
             Button(action: { withAnimation { showDatePicker.toggle() } }) {
                 HStack {
-                    Text(formatDatePreview(date))
-                        .foregroundColor(.primary)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(formatDatePreview(date))
+                            .foregroundColor(.primary)
+                        Text(formatTime(date))
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                    }
                     Spacer()
                     Image(systemName: "chevron.right")
                         .foregroundColor(.gray)
@@ -211,7 +291,7 @@ struct AddTransactionView: View {
             }
             
             if showDatePicker {
-                DatePicker("", selection: $date, displayedComponents: .date)
+                DatePicker("", selection: $date, displayedComponents: [.date, .hourAndMinute])
                     .datePickerStyle(.graphical)
                     .padding()
                     .background(
@@ -387,6 +467,42 @@ struct AddTransactionView: View {
         }
     }
     
+    private var notificationSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Label("Notifications", systemImage: "bell.badge")
+                .font(.headline)
+                .foregroundColor(.gray)
+            
+            Toggle(isOn: $enableNotification) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Enable Notifications")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                    Text("Get reminded about this transaction")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                }
+            }
+            .tint(.blue)
+            
+            if enableNotification {
+                Text(notificationPreviewText)
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color(.systemGray6))
+                    )
+            }
+        }
+        .padding(24)
+        .background(
+            TransactionCard(colorScheme: colorScheme)
+        )
+        .padding(.horizontal)
+    }
+    
     // MARK: - Helper Functions
     
     private func formatDatePreview(_ date: Date) -> String {
@@ -433,6 +549,12 @@ struct AddTransactionView: View {
         return formatter.string(from: date)
     }
     
+    private func formatTime(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
+    }
+    
     private func saveTransaction() {
         guard let amountValue = Double(amount) else { return }
         
@@ -453,6 +575,27 @@ struct AddTransactionView: View {
         )
         
         modelContext.insert(mainTransaction)
+        
+        // Schedule notification only if enabled for this transaction
+        if enableNotification {
+            Task {
+                do {
+                    try await NotificationManager.shared.scheduleTransactionNotification(for: mainTransaction)
+                } catch NotificationManager.NotificationError.notificationsDenied {
+                    print("❌ Notifications are denied")
+                    DispatchQueue.main.async {
+                        notificationError = NotificationManager.NotificationError.notificationsDenied
+                        showNotificationAlert = true
+                    }
+                } catch {
+                    print("❌ Failed to schedule notification: \(error.localizedDescription)")
+                    DispatchQueue.main.async {
+                        notificationError = error
+                        showNotificationAlert = true
+                    }
+                }
+            }
+        }
         
         // Create recurring transactions only if duration > 1
         if isRecurring && recurringDuration > 1, let endDate = endDate {
@@ -484,7 +627,15 @@ struct AddTransactionView: View {
             }
         }
         
-        dismiss()
+        // Show success message and dismiss
+        withAnimation(.easeInOut(duration: 0.3)) {
+            showSuccessMessage = true
+        }
+        
+        // Dismiss after a short delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            dismiss()
+        }
     }
     
     private func getRecurringTypeIcon(_ type: RecurringType) -> String {
@@ -498,30 +649,7 @@ struct AddTransactionView: View {
     }
 }
 
-struct TransactionCard: View {
-    let colorScheme: ColorScheme
-    
-    var body: some View {
-        RoundedRectangle(cornerRadius: 24)
-            .fill(colorScheme == .dark ? Color(.systemGray6) : .white)
-            .shadow(color: .black.opacity(0.05), radius: 10)
-            .overlay(
-                RoundedRectangle(cornerRadius: 24)
-                    .stroke(
-                        LinearGradient(
-                            colors: [
-                                .white.opacity(colorScheme == .dark ? 0.1 : 0.5),
-                                .clear,
-                                .black.opacity(0.1)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1
-                    )
-            )
-    }
-}
+
 
 struct CategoryPickerView: View {
     @Environment(\.dismiss) private var dismiss

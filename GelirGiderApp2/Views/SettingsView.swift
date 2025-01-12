@@ -3,14 +3,16 @@ import SwiftData
 import UniformTypeIdentifiers
 
 struct SettingsView: View {
-    @Query private var transactions: [Transaction]
+    @Query(sort: \Transaction.date, order: .reverse) private var transactions: [Transaction]
     @Environment(\.modelContext) private var modelContext
     @AppStorage("defaultCurrency") private var defaultCurrency = "₺"
-    @AppStorage("useBiometrics") private var useBiometrics = false
-    @AppStorage("notificationsEnabled") private var notificationsEnabled = false
+    @AppStorage("isDarkMode") private var isDarkMode = false
+    @StateObject private var notificationManager = NotificationManager.shared
     @State private var showingExportSheet = false
     @State private var showingClearDataAlert = false
     @State private var exportData: String = ""
+    @State private var isProcessingNotifications = false
+    @State private var exportURL: URL?
     
     var body: some View {
         NavigationView {
@@ -30,20 +32,64 @@ struct SettingsView: View {
                     // Theme Toggle
                     HStack {
                         SettingIcon(icon: "moon.circle.fill", color: .purple)
-                        Toggle("Dark Mode", isOn: .constant(false))
-                            .disabled(true)
-                    }
-                    
-                    // Biometrics Toggle
-                    HStack {
-                        SettingIcon(icon: "faceid", color: .green)
-                        Toggle("Use Face ID", isOn: $useBiometrics)
+                        Toggle("Dark Mode", isOn: $isDarkMode)
                     }
                     
                     // Notifications Toggle
                     HStack {
                         SettingIcon(icon: "bell.circle.fill", color: .red)
-                        Toggle("Notifications", isOn: $notificationsEnabled)
+                        if isProcessingNotifications {
+                            HStack {
+                                Text("Notifications")
+                                Spacer()
+                                ProgressView()
+                            }
+                        } else {
+                            Toggle("Notifications", isOn: Binding(
+                                get: { notificationManager.isNotificationsEnabled },
+                                set: { newValue in
+                                    if newValue {
+                                        requestNotificationPermission()
+                                    } else {
+                                        disableNotifications()
+                                    }
+                                }
+                            ))
+                        }
+                    }
+                    
+                    if notificationManager.isNotificationsEnabled {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Notifications are enabled")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                            
+                            // Test notification button
+                            Button(action: sendTestNotification) {
+                                HStack {
+                                    Image(systemName: "bell.badge")
+                                    Text("Send Test Notification (5s)")
+                                }
+                                .foregroundColor(.blue)
+                            }
+                            .buttonStyle(.bordered)
+                            .disabled(isProcessingNotifications)
+                        }
+                    } else {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Notifications are disabled")
+                                .font(.caption)
+                                .foregroundColor(.red)
+                            
+                            Button {
+                                if let url = URL(string: UIApplication.openSettingsURLString) {
+                                    UIApplication.shared.open(url)
+                                }
+                            } label: {
+                                Text("Open Settings")
+                                    .font(.caption)
+                            }
+                        }
                     }
                 } header: {
                     Text("App Preferences")
@@ -52,7 +98,11 @@ struct SettingsView: View {
                 // Data Management
                 Section {
                     // Export Data
-                    Button(action: prepareExport) {
+                    Button(action: {
+                        Task {
+                            await prepareExport()
+                        }
+                    }) {
                         HStack {
                             SettingIcon(icon: "square.and.arrow.up.circle.fill", color: .blue)
                             Text("Export Data")
@@ -130,6 +180,7 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
+            .preferredColorScheme(isDarkMode ? .dark : .light)
             .alert("Clear All Data", isPresented: $showingClearDataAlert) {
                 Button("Cancel", role: .cancel) { }
                 Button("Clear", role: .destructive) {
@@ -139,8 +190,8 @@ struct SettingsView: View {
                 Text("Are you sure you want to clear all data? This action cannot be undone.")
             }
             .sheet(isPresented: $showingExportSheet) {
-                NavigationView {
-                    ShareSheet(activityItems: [exportData])
+                if let url = exportURL {
+                    ShareSheet(activityItems: [url])
                         .navigationTitle("Export Data")
                         .navigationBarTitleDisplayMode(.inline)
                 }
@@ -148,24 +199,86 @@ struct SettingsView: View {
         }
     }
     
-    private func prepareExport() {
-        var csvText = "Date,Title,Amount,Type,Category,Notes\n"
-        
-        for transaction in transactions {
-            let row = [
-                formatDate(transaction.date),
-                transaction.title,
-                String(format: "%.2f", transaction.amount),
-                transaction.type.rawValue,
-                transaction.category,
-                transaction.notes ?? ""
-            ].map { "\"\($0)\"" }.joined(separator: ",")
+    private func prepareExport() async {
+        do {
+            // Create a descriptor to fetch all transactions
+            let descriptor = FetchDescriptor<Transaction>(
+                sortBy: [SortDescriptor(\.date, order: .reverse)]
+            )
             
-            csvText += row + "\n"
+            // Fetch all transactions using the model context
+            let allTransactions = try modelContext.fetch(descriptor)
+            
+            print("Number of transactions: \(allTransactions.count)") // Debug print
+            
+            guard !allTransactions.isEmpty else {
+                await MainActor.run {
+                    exportData = "No transactions found"
+                    showingExportSheet = true
+                }
+                return
+            }
+            
+            let headers = [
+                "Date",
+                "Title",
+                "Amount",
+                "Currency",
+                "Type",
+                "Category",
+                "Notes",
+                "Is Recurring",
+                "Recurring Type",
+                "Recurring Duration",
+                "Recurring End Date"
+            ]
+            
+            var csvText = headers.map { "\"\($0)\"" }.joined(separator: ",") + "\n"
+            
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "dd/MM/yyyy HH:mm"
+            
+            for transaction in allTransactions {
+                print("Processing transaction: \(transaction.title)") // Debug print
+                
+                let amount = String(format: "%.2f", abs(transaction.amount))
+                
+                let row = [
+                    dateFormatter.string(from: transaction.date),
+                    transaction.title,
+                    amount,
+                    defaultCurrency,
+                    transaction.type.rawValue,
+                    transaction.category,
+                    transaction.notes ?? "",
+                    transaction.isRecurring ? "Yes" : "No",
+                    transaction.recurringType.rawValue,
+                    transaction.recurringDuration?.description ?? "",
+                    transaction.recurringEndDate.map { dateFormatter.string(from: $0) } ?? ""
+                ].map { value in
+                    let escaped = value.replacingOccurrences(of: "\"", with: "\"\"")
+                    return "\"\(escaped)\""
+                }.joined(separator: ",")
+                
+                csvText += row + "\n"
+            }
+            
+            // Create a temporary file with a unique name
+            let timestamp = Int(Date().timeIntervalSince1970)
+            let fileName = "GelirGider_Export_\(timestamp).csv"
+            let tempDirectoryURL = FileManager.default.temporaryDirectory
+            let fileURL = tempDirectoryURL.appendingPathComponent(fileName)
+            
+            try csvText.write(to: fileURL, atomically: true, encoding: .utf8)
+            
+            await MainActor.run {
+                self.exportURL = fileURL
+                self.showingExportSheet = true
+            }
+            
+        } catch {
+            print("❌ Export error: \(error.localizedDescription)")
         }
-        
-        exportData = csvText
-        showingExportSheet = true
     }
     
     private func formatDate(_ date: Date) -> String {
@@ -177,6 +290,40 @@ struct SettingsView: View {
     private func clearAllData() {
         for transaction in transactions {
             modelContext.delete(transaction)
+        }
+    }
+    
+    private func requestNotificationPermission() {
+        isProcessingNotifications = true
+        Task {
+            do {
+                try await notificationManager.requestAuthorization()
+            } catch {
+                print("❌ Notification permission error: \(error.localizedDescription)")
+            }
+            isProcessingNotifications = false
+        }
+    }
+    
+    private func disableNotifications() {
+        isProcessingNotifications = true
+        Task {
+            await notificationManager.disableNotifications()
+            isProcessingNotifications = false
+        }
+    }
+    
+    private func sendTestNotification() {
+        guard !isProcessingNotifications else { return }
+        isProcessingNotifications = true
+        
+        Task {
+            do {
+                try await notificationManager.sendTestNotification()
+            } catch {
+                print("❌ Test notification error: \(error.localizedDescription)")
+            }
+            isProcessingNotifications = false
         }
     }
 }
@@ -197,7 +344,14 @@ struct ShareSheet: UIViewControllerRepresentable {
     let activityItems: [Any]
     
     func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+        let activityVC = UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+        activityVC.completionWithItemsHandler = { _, _, _, _ in
+            // Clean up temporary files after sharing
+            if let fileURL = activityItems.first as? URL {
+                try? FileManager.default.removeItem(at: fileURL)
+            }
+        }
+        return activityVC
     }
     
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}

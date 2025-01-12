@@ -11,6 +11,8 @@ struct TransactionsView: View {
     @State private var filterRecurring: RecurringFilter = .all
     @State private var showingSortOptions = false
     @State private var sortOrder: SortOrder = .dateDescending
+    @State private var selectedPeriod: TimePeriod = .all
+    @State private var selectedDate = Date()
     
     enum SortOrder {
         case dateDescending
@@ -41,7 +43,27 @@ struct TransactionsView: View {
         }
     }
     
+    enum TimePeriod: String, CaseIterable {
+        case all = "All Time"
+        case week = "This Week"
+        case month = "This Month"
+        case year = "This Year"
+        
+        var component: Calendar.Component {
+            switch self {
+            case .all: return .era
+            case .week: return .weekOfYear
+            case .month: return .month
+            case .year: return .year
+            }
+        }
+    }
+    
     var filteredTransactions: [Transaction] {
+        let calendar = Calendar.current
+        let components: Set<Calendar.Component> = [.year, .month, .weekOfYear]
+        let currentComponents = calendar.dateComponents(components, from: selectedDate)
+        
         let filtered = transactions.filter { transaction in
             let matchesSearch = searchText.isEmpty || 
                 transaction.title.localizedCaseInsensitiveContains(searchText) ||
@@ -53,7 +75,23 @@ struct TransactionsView: View {
                 (filterRecurring == .recurring && transaction.isRecurring) ||
                 (filterRecurring == .oneTime && !transaction.isRecurring)
             
-            return matchesSearch && matchesType && matchesRecurring
+            let transactionComponents = calendar.dateComponents(components, from: transaction.date)
+            let matchesPeriod: Bool
+            
+            switch selectedPeriod {
+            case .all:
+                matchesPeriod = true
+            case .week:
+                matchesPeriod = transactionComponents.weekOfYear == currentComponents.weekOfYear &&
+                               transactionComponents.year == currentComponents.year
+            case .month:
+                matchesPeriod = transactionComponents.month == currentComponents.month &&
+                               transactionComponents.year == currentComponents.year
+            case .year:
+                matchesPeriod = transactionComponents.year == currentComponents.year
+            }
+            
+            return matchesSearch && matchesType && matchesRecurring && matchesPeriod
         }
         
         return filtered.sorted { first, second in
@@ -81,8 +119,8 @@ struct TransactionsView: View {
                 // Background gradient
                 LinearGradient(
                     colors: [
-                        Color(colorScheme == .dark ? .systemGray6 : .systemBackground),
-                        Color(colorScheme == .dark ? .systemGray5 : .systemGray6)
+                        Color.black,
+                        Color.black.opacity(0.8)
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -92,12 +130,30 @@ struct TransactionsView: View {
                 VStack(spacing: 0) {
                     // Filter Section
                     VStack(spacing: 12) {
+                        // Date Period Filter
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 12) {
+                                ForEach(TimePeriod.allCases, id: \.self) { period in
+                                    FilterPill(
+                                        title: period.rawValue,
+                                        icon: periodIcon(for: period),
+                                        color: periodColor(for: period),
+                                        isSelected: selectedPeriod == period
+                                    ) {
+                                        withAnimation { selectedPeriod = period }
+                                    }
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
+                        
                         // Transaction Type Filter
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 12) {
                                 FilterPill(
                                     title: "All",
                                     icon: "tray.fill",
+                                    color: Color(white: 0.2),
                                     isSelected: filterType == nil
                                 ) {
                                     withAnimation { filterType = nil }
@@ -131,6 +187,7 @@ struct TransactionsView: View {
                                     FilterPill(
                                         title: filter.title,
                                         icon: filter.icon,
+                                        color: recurringColor(for: filter),
                                         isSelected: filterRecurring == filter
                                     ) {
                                         withAnimation { filterRecurring = filter }
@@ -223,6 +280,32 @@ struct TransactionsView: View {
     private func deleteTransaction(_ transaction: Transaction) {
         modelContext.delete(transaction)
     }
+    
+    private func periodIcon(for period: TimePeriod) -> String {
+        switch period {
+        case .all: return "infinity.circle"
+        case .week: return "calendar.circle"
+        case .month: return "calendar.circle.fill"
+        case .year: return "calendar.badge.clock"
+        }
+    }
+    
+    private func periodColor(for period: TimePeriod) -> Color {
+        switch period {
+        case .all: return Color(white: 0.2)
+        case .week: return .blue
+        case .month: return .purple
+        case .year: return .indigo
+        }
+    }
+    
+    private func recurringColor(for filter: RecurringFilter) -> Color {
+        switch filter {
+        case .all: return Color(white: 0.2)
+        case .oneTime: return .orange
+        case .recurring: return .blue
+        }
+    }
 }
 
 struct FilterPill: View {
@@ -232,6 +315,10 @@ struct FilterPill: View {
     let isSelected: Bool
     let action: () -> Void
     
+    private var isAllFilter: Bool {
+        title == "All" || title == "All Time"
+    }
+    
     var body: some View {
         Button(action: action) {
             HStack(spacing: 6) {
@@ -240,14 +327,28 @@ struct FilterPill: View {
             }
             .font(.system(.subheadline, design: .rounded))
             .fontWeight(.medium)
-            .foregroundColor(isSelected ? .white : .primary)
+            .foregroundColor(foregroundColor)
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
             .background(
                 Capsule()
-                    .fill(isSelected ? color : Color(.systemGray6))
+                    .fill(backgroundColor)
             )
         }
+    }
+    
+    private var foregroundColor: Color {
+        if isAllFilter {
+            return isSelected ? .white : .white.opacity(0.9)
+        }
+        return isSelected ? .white : color
+    }
+    
+    private var backgroundColor: Color {
+        if isAllFilter {
+            return isSelected ? color : color.opacity(0.5)
+        }
+        return isSelected ? color : color.opacity(0.1)
     }
 }
 

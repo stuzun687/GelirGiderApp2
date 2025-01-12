@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		88009EED2D343CDC002186C0 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88009EEC2D343CDC002186C0 /* NotificationManager.swift */; };
 		887945352D2FEEE900E0FBA1 /* GelirGiderApp2App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887945342D2FEEE900E0FBA1 /* GelirGiderApp2App.swift */; };
 		887945392D2FEEE900E0FBA1 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887945382D2FEEE900E0FBA1 /* Item.swift */; };
 		8879453B2D2FEEEA00E0FBA1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8879453A2D2FEEEA00E0FBA1 /* Assets.xcassets */; };
@@ -41,6 +42,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		88009EEC2D343CDC002186C0 /* NotificationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NotificationManager.swift; path = GelirGiderApp2/Models/NotificationManager.swift; sourceTree = SOURCE_ROOT; };
 		887945312D2FEEE900E0FBA1 /* GelirGiderApp2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GelirGiderApp2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		887945342D2FEEE900E0FBA1 /* GelirGiderApp2App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GelirGiderApp2App.swift; sourceTree = "<group>"; };
 		887945382D2FEEE900E0FBA1 /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
@@ -160,6 +162,7 @@
 			isa = PBXGroup;
 			children = (
 				8879456D2D2FF02E00E0FBA1 /* Transaction.swift */,
+				88009EEC2D343CDC002186C0 /* NotificationManager.swift */,
 			);
 			name = Models;
 			path = GelirGiderApp2/Models;
@@ -297,6 +300,7 @@
 			files = (
 				8879456B2D2FEFF000E0FBA1 /* SettingsView.swift in Sources */,
 				887945672D2FEFF000E0FBA1 /* AddTransactionView.swift in Sources */,
+				88009EED2D343CDC002186C0 /* NotificationManager.swift in Sources */,
 				887945692D2FEFF000E0FBA1 /* ContentView.swift in Sources */,
 				8879456F2D2FF02E00E0FBA1 /* Transaction.swift in Sources */,
 				8879456A2D2FEFF000E0FBA1 /* DashboardView.swift in Sources */,
