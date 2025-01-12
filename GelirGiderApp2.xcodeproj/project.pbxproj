@@ -8,13 +8,19 @@
 
 /* Begin PBXBuildFile section */
 		887945352D2FEEE900E0FBA1 /* GelirGiderApp2App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887945342D2FEEE900E0FBA1 /* GelirGiderApp2App.swift */; };
-		887945372D2FEEE900E0FBA1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887945362D2FEEE900E0FBA1 /* ContentView.swift */; };
 		887945392D2FEEE900E0FBA1 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887945382D2FEEE900E0FBA1 /* Item.swift */; };
 		8879453B2D2FEEEA00E0FBA1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8879453A2D2FEEEA00E0FBA1 /* Assets.xcassets */; };
 		8879453E2D2FEEEA00E0FBA1 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8879453D2D2FEEEA00E0FBA1 /* Preview Assets.xcassets */; };
 		887945482D2FEEEB00E0FBA1 /* GelirGiderApp2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887945472D2FEEEB00E0FBA1 /* GelirGiderApp2Tests.swift */; };
 		887945522D2FEEEB00E0FBA1 /* GelirGiderApp2UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887945512D2FEEEB00E0FBA1 /* GelirGiderApp2UITests.swift */; };
 		887945542D2FEEEB00E0FBA1 /* GelirGiderApp2UITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887945532D2FEEEB00E0FBA1 /* GelirGiderApp2UITestsLaunchTests.swift */; };
+		887945672D2FEFF000E0FBA1 /* AddTransactionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887945602D2FEFF000E0FBA1 /* AddTransactionView.swift */; };
+		887945682D2FEFF000E0FBA1 /* AnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887945612D2FEFF000E0FBA1 /* AnalyticsView.swift */; };
+		887945692D2FEFF000E0FBA1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887945622D2FEFF000E0FBA1 /* ContentView.swift */; };
+		8879456A2D2FEFF000E0FBA1 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887945632D2FEFF000E0FBA1 /* DashboardView.swift */; };
+		8879456B2D2FEFF000E0FBA1 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887945642D2FEFF000E0FBA1 /* SettingsView.swift */; };
+		8879456C2D2FEFF000E0FBA1 /* TransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887945652D2FEFF000E0FBA1 /* TransactionsView.swift */; };
+		8879456F2D2FF02E00E0FBA1 /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8879456D2D2FF02E00E0FBA1 /* Transaction.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,7 +43,6 @@
 /* Begin PBXFileReference section */
 		887945312D2FEEE900E0FBA1 /* GelirGiderApp2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GelirGiderApp2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		887945342D2FEEE900E0FBA1 /* GelirGiderApp2App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GelirGiderApp2App.swift; sourceTree = "<group>"; };
-		887945362D2FEEE900E0FBA1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		887945382D2FEEE900E0FBA1 /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
 		8879453A2D2FEEEA00E0FBA1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8879453D2D2FEEEA00E0FBA1 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -46,6 +51,13 @@
 		8879454D2D2FEEEB00E0FBA1 /* GelirGiderApp2UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GelirGiderApp2UITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		887945512D2FEEEB00E0FBA1 /* GelirGiderApp2UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GelirGiderApp2UITests.swift; sourceTree = "<group>"; };
 		887945532D2FEEEB00E0FBA1 /* GelirGiderApp2UITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GelirGiderApp2UITestsLaunchTests.swift; sourceTree = "<group>"; };
+		887945602D2FEFF000E0FBA1 /* AddTransactionView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddTransactionView.swift; sourceTree = "<group>"; };
+		887945612D2FEFF000E0FBA1 /* AnalyticsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnalyticsView.swift; sourceTree = "<group>"; };
+		887945622D2FEFF000E0FBA1 /* ContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		887945632D2FEFF000E0FBA1 /* DashboardView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		887945642D2FEFF000E0FBA1 /* SettingsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		887945652D2FEFF000E0FBA1 /* TransactionsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionsView.swift; sourceTree = "<group>"; };
+		8879456D2D2FF02E00E0FBA1 /* Transaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,7 +109,8 @@
 			isa = PBXGroup;
 			children = (
 				887945342D2FEEE900E0FBA1 /* GelirGiderApp2App.swift */,
-				887945362D2FEEE900E0FBA1 /* ContentView.swift */,
+				8879456E2D2FF02E00E0FBA1 /* Models */,
+				887945662D2FEFF000E0FBA1 /* Views */,
 				887945382D2FEEE900E0FBA1 /* Item.swift */,
 				8879453A2D2FEEEA00E0FBA1 /* Assets.xcassets */,
 				8879453C2D2FEEEA00E0FBA1 /* Preview Content */,
@@ -129,6 +142,28 @@
 			);
 			path = GelirGiderApp2UITests;
 			sourceTree = "<group>";
+		};
+		887945662D2FEFF000E0FBA1 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				887945602D2FEFF000E0FBA1 /* AddTransactionView.swift */,
+				887945612D2FEFF000E0FBA1 /* AnalyticsView.swift */,
+				887945622D2FEFF000E0FBA1 /* ContentView.swift */,
+				887945632D2FEFF000E0FBA1 /* DashboardView.swift */,
+				887945642D2FEFF000E0FBA1 /* SettingsView.swift */,
+				887945652D2FEFF000E0FBA1 /* TransactionsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		8879456E2D2FF02E00E0FBA1 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				8879456D2D2FF02E00E0FBA1 /* Transaction.swift */,
+			);
+			name = Models;
+			path = GelirGiderApp2/Models;
+			sourceTree = SOURCE_ROOT;
 		};
 /* End PBXGroup section */
 
@@ -260,8 +295,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				887945372D2FEEE900E0FBA1 /* ContentView.swift in Sources */,
+				8879456B2D2FEFF000E0FBA1 /* SettingsView.swift in Sources */,
+				887945672D2FEFF000E0FBA1 /* AddTransactionView.swift in Sources */,
+				887945692D2FEFF000E0FBA1 /* ContentView.swift in Sources */,
+				8879456F2D2FF02E00E0FBA1 /* Transaction.swift in Sources */,
+				8879456A2D2FEFF000E0FBA1 /* DashboardView.swift in Sources */,
+				8879456C2D2FEFF000E0FBA1 /* TransactionsView.swift in Sources */,
 				887945392D2FEEE900E0FBA1 /* Item.swift in Sources */,
+				887945682D2FEFF000E0FBA1 /* AnalyticsView.swift in Sources */,
 				887945352D2FEEE900E0FBA1 /* GelirGiderApp2App.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -432,8 +473,7 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -461,8 +501,7 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
