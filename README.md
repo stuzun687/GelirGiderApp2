@@ -1,5 +1,10 @@
 # GelirGiderApp - Kişisel Finans Takip Uygulaması
 
+## 👥 Geliştiriciler
+
+- **Semih Tüzün 05210000930**
+- **Elif Güngördü 05220000968**
+
 ## 📱 Proje Hakkında
 
 GelirGiderApp, kişisel finans yönetimini kolaylaştırmak için tasarlanmış modern bir iOS uygulamasıdır. Kullanıcıların gelir ve giderlerini etkili bir şekilde takip etmelerini, bütçelerini yönetmelerini ve finansal hedeflerine ulaşmalarını sağlar.
@@ -56,9 +61,3 @@ GelirGiderApp, kişisel finans yönetimini kolaylaştırmak için tasarlanmış 
 - Döviz kurları entegrasyonu
 - Fatura tarama ve otomatik giriş
 
-## 🤝 Katkıda Bulunanlar
-
-Bu proje aşağıdaki kişiler tarafından geliştirilmiştir:
-
-- **Semih Tüzün 05210000930**
-- **Elif Güngördü 05220000968**
