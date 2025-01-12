@@ -1,46 +1,56 @@
+// Bu dosya, uygulamamızdaki gelir ve gider işlemlerini temsil eden veri modelini içerir.
+// Gerekli kütüphaneleri içe aktarıyoruz
 import Foundation
 import SwiftData
 
+// İşlem tipini belirten enum (gelir veya gider)
+// Bu enum, her işlemin gelir mi yoksa gider mi olduğunu belirtir
 enum TransactionType: String, Codable {
-    case income = "income"
-    case expense = "expense"
+    case income = "income"    // Gelir işlemi
+    case expense = "expense"  // Gider işlemi
 }
 
+// Tekrarlanan işlemlerin türünü belirten enum
+// Bu enum, bir işlemin hangi sıklıkla tekrarlanacağını belirtir
 enum RecurringType: String, Codable {
-    case none = "none"
-    case daily = "daily"
-    case weekly = "weekly"
-    case monthly = "monthly"
-    case yearly = "yearly"
+    case none = "none"       // Tekrarlanmayan işlem
+    case daily = "daily"     // Günlük tekrarlanan işlem
+    case weekly = "weekly"   // Haftalık tekrarlanan işlem
+    case monthly = "monthly" // Aylık tekrarlanan işlem
+    case yearly = "yearly"   // Yıllık tekrarlanan işlem
     
+    // Tekrarlama süresinin birimini belirten hesaplama özelliği
+    // Her tekrarlama türü için uygun zaman birimini döndürür
     var durationUnit: Calendar.Component {
         switch self {
-        case .none: return .day
-        case .daily: return .day
-        case .weekly: return .weekOfYear
-        case .monthly: return .month
-        case .yearly: return .year
+        case .none: return .day      // Tekrarlanmayan için gün
+        case .daily: return .day     // Günlük için gün
+        case .weekly: return .weekOfYear  // Haftalık için hafta
+        case .monthly: return .month  // Aylık için ay
+        case .yearly: return .year   // Yıllık için yıl
         }
     }
 }
 
-@Model
+// Ana işlem sınıfı - Her bir gelir veya gider işlemini temsil eder
+@Model  // SwiftData ile veritabanı entegrasyonu için gerekli
 final class Transaction {
-    @Attribute(.unique) let id: String
-    var title: String
-    var amount: Double
-    var date: Date
-    var type: TransactionType
-    var category: String
-    var notes: String?
+    @Attribute(.unique) let id: String  // Her işlem için benzersiz kimlik
+    var title: String      // İşlem başlığı (örn: "Market Alışverişi")
+    var amount: Double     // İşlem tutarı (örn: 100.50)
+    var date: Date        // İşlem tarihi
+    var type: TransactionType  // İşlem tipi (gelir/gider)
+    var category: String   // İşlem kategorisi (örn: "Yiyecek", "Kira")
+    var notes: String?     // İşlem için opsiyonel notlar
     
-    // Recurring transaction properties
-    var isRecurring: Bool
-    var recurringType: RecurringType
-    var recurringDuration: Int? // Number of days/weeks/months/years
-    var recurringEndDate: Date? // Computed based on duration
-    var parentTransaction: Transaction?
+    // Tekrarlanan işlemler için özellikler
+    var isRecurring: Bool  // İşlemin tekrarlı olup olmadığı
+    var recurringType: RecurringType  // Tekrarlanma türü
+    var recurringDuration: Int?  // Tekrarlanma süresi (kaç gün/hafta/ay/yıl)
+    var recurringEndDate: Date?  // Tekrarlanmanın biteceği tarih
+    var parentTransaction: Transaction?  // Ana işlem referansı (tekrarlanan işlemler için)
     
+    // Yeni bir işlem oluşturmak için kullanılan başlatıcı (constructor)
     init(
         title: String,
         amount: Double,
@@ -54,7 +64,7 @@ final class Transaction {
         recurringEndDate: Date? = nil,
         parentTransaction: Transaction? = nil
     ) {
-        self.id = UUID().uuidString
+        self.id = UUID().uuidString  // Benzersiz bir ID oluştur
         self.title = title
         self.amount = amount
         self.date = date
@@ -68,14 +78,16 @@ final class Transaction {
         self.parentTransaction = parentTransaction
     }
     
-    // Calculate end date based on duration
+    // Tekrarlanan işlemin bitiş tarihini hesaplayan fonksiyon
     func calculateEndDate() -> Date? {
+        // Eğer işlem tekrarlı değilse veya geçerli bir süre yoksa nil döndür
         guard isRecurring,
               let duration = recurringDuration,
               duration > 0 else {
             return nil
         }
         
+        // Başlangıç tarihine tekrarlama süresini ekleyerek bitiş tarihini hesapla
         return Calendar.current.date(
             byAdding: recurringType.durationUnit,
             value: duration,
@@ -84,33 +96,37 @@ final class Transaction {
     }
 }
 
+// İşlem tipinin kullanıcı dostu açıklamasını sağlayan uzantı
 extension TransactionType {
     var description: String {
         switch self {
-        case .income: return "Income"
-        case .expense: return "Expense"
+        case .income: return "Income"   // Gelir
+        case .expense: return "Expense" // Gider
         }
     }
 }
 
+// Tekrarlama tipinin kullanıcı dostu açıklamalarını sağlayan uzantı
 extension RecurringType {
+    // Tekrarlama türünün açıklaması
     var description: String {
         switch self {
-        case .none: return "None"
-        case .daily: return "Daily"
-        case .weekly: return "Weekly"
-        case .monthly: return "Monthly"
-        case .yearly: return "Yearly"
+        case .none: return "None"     // Tekrarlanmayan
+        case .daily: return "Daily"    // Günlük
+        case .weekly: return "Weekly"  // Haftalık
+        case .monthly: return "Monthly" // Aylık
+        case .yearly: return "Yearly"  // Yıllık
         }
     }
     
+    // Tekrarlama süresinin birim açıklaması
     var durationDescription: String {
         switch self {
-        case .none: return "days"
-        case .daily: return "days"
-        case .weekly: return "weeks"
-        case .monthly: return "months"
-        case .yearly: return "years"
+        case .none: return "days"    // Gün
+        case .daily: return "days"   // Gün
+        case .weekly: return "weeks" // Hafta
+        case .monthly: return "months" // Ay
+        case .yearly: return "years"  // Yıl
         }
     }
-} 
+}

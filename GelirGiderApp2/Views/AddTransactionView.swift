@@ -1,36 +1,48 @@
-import SwiftUI
-import SwiftData
+// MARK: - Gerekli Framework'lerin Import Edilmesi
+import SwiftUI // Kullanıcı arayüzü bileşenleri için
+import SwiftData // Veri yönetimi ve kalıcı depolama için
 
+// MARK: - Ana İşlem Ekleme Görünümü
+/// Bu görünüm, yeni gelir veya gider işlemlerinin eklenmesini sağlar.
+/// Kullanıcılar burada işlem detaylarını girebilir, tekrarlayan işlemler oluşturabilir
+/// ve bildirim ayarlarını yapılandırabilirler.
 struct AddTransactionView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Environment(\.dismiss) private var dismiss
-    @Environment(\.colorScheme) private var colorScheme
+    // MARK: - Environment Değişkenleri
+    @Environment(\.modelContext) private var modelContext // Veri kaydetme işlemleri için
+    @Environment(\.dismiss) private var dismiss // Görünümü kapatmak için
+    @Environment(\.colorScheme) private var colorScheme // Karanlık/Aydınlık mod kontrolü için
     
-    // Basic transaction states
-    @State private var title = ""
-    @State private var amount = ""
-    @State private var type: TransactionType = .expense
-    @State private var selectedCategory = ""
-    @State private var date = Date()
-    @State private var notes = ""
+    // MARK: - Temel İşlem Durumları
+    /// İşlemin temel bilgilerini tutan state değişkenleri
+    @State private var title = "" // İşlem başlığı
+    @State private var amount = "" // İşlem tutarı
+    @State private var type: TransactionType = .expense // İşlem tipi (gelir/gider)
+    @State private var selectedCategory = "" // Seçilen kategori
+    @State private var date = Date() // İşlem tarihi
+    @State private var notes = "" // İşlem notları
     
-    // UI states
-    @State private var showingCategoryPicker = false
-    @State private var isRecurring = false
-    @State private var recurringType: RecurringType = .monthly
-    @State private var recurringDuration: Int = 1
-    @State private var showDatePicker = false
-    @State private var showTimePicker = false
-    @State private var showNotificationAlert = false
-    @State private var notificationError: Error?
-    @State private var showSuccessMessage = false
-    @State private var isNotificationAuthorized = false
-    @State private var enableNotification = true
+    // MARK: - Kullanıcı Arayüzü Durumları
+    /// Arayüz etkileşimlerini kontrol eden state değişkenleri
+    @State private var showingCategoryPicker = false // Kategori seçici görünümünün durumu
+    @State private var isRecurring = false // Tekrarlayan işlem durumu
+    @State private var recurringType: RecurringType = .monthly // Tekrarlama periyodu
+    @State private var recurringDuration: Int = 1 // Tekrarlama süresi
+    @State private var showDatePicker = false // Tarih seçici görünümünün durumu
+    @State private var showTimePicker = false // Saat seçici görünümünün durumu
+    @State private var showNotificationAlert = false // Bildirim hata uyarısının durumu
+    @State private var notificationError: Error? // Bildirim hatası
+    @State private var showSuccessMessage = false // Başarılı kayıt mesajının durumu
+    @State private var isNotificationAuthorized = false // Bildirim izni durumu
+    @State private var enableNotification = true // Bildirim aktiflik durumu
     
+    // MARK: - Form Doğrulama
+    /// Formun geçerli olup olmadığını kontrol eden hesaplanmış özellik
     private var isFormValid: Bool {
         !title.isEmpty && !amount.isEmpty && !selectedCategory.isEmpty
     }
     
+    // MARK: - Bildirim Önizleme Metni
+    /// Bildirim ayarlarının özet metnini oluşturan hesaplanmış özellik
     private var notificationPreviewText: String {
         guard enableNotification else { return "Notifications disabled for this transaction" }
         
@@ -63,10 +75,15 @@ struct AddTransactionView: View {
         return text
     }
     
+    // MARK: - Ana Görünüm Yapısı
+    /// Görünümün ana body yapısı
+    /// Karanlık tema üzerine yerleştirilmiş scroll view içinde
+    /// işlem detaylarının girileceği kartlar bulunur
     var body: some View {
         NavigationView {
             ZStack {
-                // Background gradient
+                // MARK: - Arka Plan Tasarımı
+                /// Premium görünümlü siyah gradyan arka plan
                 LinearGradient(
                     colors: [
                         Color.black,
@@ -79,14 +96,15 @@ struct AddTransactionView: View {
                 
                 ScrollView {
                     VStack(spacing: 24) {
-                        amountCard
-                        detailsCard
-                        notificationSection
+                        amountCard // Tutar giriş kartı
+                        detailsCard // Detay bilgileri kartı
+                        notificationSection // Bildirim ayarları bölümü
                     }
                     .padding(.vertical)
                 }
                 
-                // Success Message
+                // MARK: - Başarı Mesajı Gösterimi
+                /// İşlem başarıyla kaydedildiğinde gösterilen geçici mesaj
                 if showSuccessMessage {
                     VStack {
                         Spacer()
@@ -143,11 +161,14 @@ struct AddTransactionView: View {
         }
     }
     
-    // MARK: - View Components
+    // MARK: - Görünüm Bileşenleri
+    /// Her bir bileşen, kullanıcı arayüzünün belirli bir bölümünü oluşturur
     
+    // MARK: - Tutar Kartı Bileşeni
+    /// İşlem tipinin seçildiği ve tutarın girildiği kart görünümü
     private var amountCard: some View {
         VStack(spacing: 20) {
-            // Type Selector
+            // İşlem Tipi Seçici
             HStack(spacing: 24) {
                 ForEach([TransactionType.expense, .income], id: \.self) { transactionType in
                     Button(action: { withAnimation { type = transactionType } }) {
@@ -173,7 +194,7 @@ struct AddTransactionView: View {
                 }
             }
             
-            // Amount Input
+            // Tutar Girişi
             HStack(alignment: .firstTextBaseline) {
                 Text("₺")
                     .font(.system(size: 40, weight: .medium))
@@ -194,21 +215,23 @@ struct AddTransactionView: View {
         .padding(.horizontal)
     }
     
+    // MARK: - Detay Kartı Bileşeni
+    /// İşlem detaylarının girildiği kart görünümü
     private var detailsCard: some View {
         VStack(spacing: 24) {
-            // Title & Category Section
+            // Başlık ve Kategori Bölümü
             VStack(spacing: 16) {
                 titleField
                 categoryButton
             }
             
-            // Date Section
+            // Tarih Bölümü
             dateButton
             
-            // Recurring Section
+            // Tekrarlanan İşlem Bölümü
             recurringSection
             
-            // Notes Section
+            // Notlar Bölümü
             notesField
         }
         .padding(24)
@@ -218,6 +241,8 @@ struct AddTransactionView: View {
         .padding(.horizontal)
     }
     
+    // MARK: - Başlık Alanı
+    /// İşlem başlığının girildiği metin alanı
     private var titleField: some View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Title", systemImage: "text.alignleft")
@@ -234,6 +259,8 @@ struct AddTransactionView: View {
         }
     }
     
+    // MARK: - Kategori Seçim Butonu
+    /// Kategori seçimini tetikleyen buton
     private var categoryButton: some View {
         Button(action: { showingCategoryPicker = true }) {
             VStack(alignment: .leading, spacing: 8) {
@@ -263,6 +290,8 @@ struct AddTransactionView: View {
         }
     }
     
+    // MARK: - Tarih Seçim Butonu
+    /// Tarih ve saat seçimini sağlayan buton ve tarih seçici
     private var dateButton: some View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Date & Time", systemImage: "calendar")
@@ -303,6 +332,8 @@ struct AddTransactionView: View {
         }
     }
     
+    // MARK: - Tekrarlanan İşlem Bölümü
+    /// Tekrarlanan işlem ayarlarının yapılandırıldığı bölüm
     private var recurringSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             // Recurring Toggle with Preview
@@ -451,6 +482,8 @@ struct AddTransactionView: View {
         }
     }
     
+    // MARK: - Not Alanı
+    /// İşlem için not ekleme alanı
     private var notesField: some View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Notes", systemImage: "note.text")
@@ -467,6 +500,8 @@ struct AddTransactionView: View {
         }
     }
     
+    // MARK: - Bildirim Bölümü
+    /// Bildirim ayarlarının yapılandırıldığı bölüm
     private var notificationSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             Label("Notifications", systemImage: "bell.badge")
@@ -503,8 +538,11 @@ struct AddTransactionView: View {
         .padding(.horizontal)
     }
     
-    // MARK: - Helper Functions
+    // MARK: - Yardımcı Fonksiyonlar
+    /// Görünümde kullanılan çeşitli yardımcı fonksiyonlar
     
+    // MARK: - Tarih Formatı Fonksiyonu
+    /// Tarihi kullanıcı dostu bir formatta gösterir
     private func formatDatePreview(_ date: Date) -> String {
         if Calendar.current.isDateInToday(date) {
             return "Today"
@@ -519,6 +557,8 @@ struct AddTransactionView: View {
         }
     }
     
+    // MARK: - Kategori İkon Fonksiyonu
+    /// Her kategori için uygun sistem ikonunu döndürür
     private func getCategoryIcon(_ category: String) -> String {
         let icons = [
             "Food": "fork.knife",
@@ -533,6 +573,8 @@ struct AddTransactionView: View {
         return icons[category] ?? "creditcard.fill"
     }
     
+    // MARK: - Bitiş Tarihi Hesaplama Fonksiyonu
+    /// Tekrarlayan işlemler için bitiş tarihini hesaplar
     private func calculateEndDate() -> Date? {
         guard isRecurring, recurringDuration > 0 else { return nil }
         return Calendar.current.date(
@@ -542,6 +584,8 @@ struct AddTransactionView: View {
         )
     }
     
+    // MARK: - Tarih Formatlama Fonksiyonları
+    /// Tarihi ve saati formatlayan yardımcı fonksiyonlar
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
@@ -555,12 +599,14 @@ struct AddTransactionView: View {
         return formatter.string(from: date)
     }
     
+    // MARK: - İşlem Kaydetme Fonksiyonu
+    /// Yeni işlemi veritabanına kaydeder ve gerekli bildirimleri ayarlar
     private func saveTransaction() {
         guard let amountValue = Double(amount) else { return }
         
         let endDate = isRecurring ? calculateEndDate() : nil
         
-        // Create main transaction
+        // Ana işlemi oluştur
         let mainTransaction = Transaction(
             title: title,
             amount: amountValue,
@@ -576,7 +622,7 @@ struct AddTransactionView: View {
         
         modelContext.insert(mainTransaction)
         
-        // Schedule notification only if enabled for this transaction
+        // Bildirim ayarlarını yap
         if enableNotification {
             Task {
                 do {
@@ -597,7 +643,7 @@ struct AddTransactionView: View {
             }
         }
         
-        // Create recurring transactions only if duration > 1
+        // Tekrarlayan işlemleri oluştur
         if isRecurring && recurringDuration > 1, let endDate = endDate {
             var currentDate = date
             
@@ -627,17 +673,19 @@ struct AddTransactionView: View {
             }
         }
         
-        // Show success message and dismiss
+        // Başarı mesajını göster
         withAnimation(.easeInOut(duration: 0.3)) {
             showSuccessMessage = true
         }
         
-        // Dismiss after a short delay
+        // Kısa bir gecikme ile görünümü kapat
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             dismiss()
         }
     }
     
+    // MARK: - Tekrarlama Tipi İkon Fonksiyonu
+    /// Her tekrarlama tipi için uygun sistem ikonunu döndürür
     private func getRecurringTypeIcon(_ type: RecurringType) -> String {
         switch type {
         case .daily: return "sun.max.fill"
@@ -651,10 +699,13 @@ struct AddTransactionView: View {
 
 
 
+// MARK: - Kategori Seçici Görünümü
+/// Kullanıcının işlem kategorisini seçmesini sağlayan alt görünüm
 struct CategoryPickerView: View {
     @Environment(\.dismiss) private var dismiss
     @Binding var selectedCategory: String
     
+    // Kategori ve ikonların eşleştirilmesi
     let categories = [
         "Food": "fork.knife",
         "Transportation": "car.fill",
